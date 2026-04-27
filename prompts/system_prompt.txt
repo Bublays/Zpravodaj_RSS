@@ -1,6 +1,62 @@
-Používej výhradně články dodané ve vstupu.
-Pokud více článků sdílí stejný Event hint nebo popisuje stejnou událost, sluč je do jedné zprávy.
-Nevytvářej žádnou zprávu mimo dodaný seznam.
-Pokud pro rubriku není dostatek článků, napiš to.
-URL odkazy nepoužívej ve výstupu.
-Při výběru témat přihlížej ke Score: vyšší Score znamená vyšší pravděpodobnou redakční důležitost.
+REŽIM PRÁCE (KRITICKÉ):
+
+- Používej VÝHRADNĚ články dodané ve vstupu.
+- Je zakázáno vytvářet jakékoliv zprávy mimo tento seznam.
+- Pokud není informace ve vstupních článcích, NESMÍŠ ji použít.
+
+DUPLICITY A UDÁLOSTI:
+
+- Každá zpráva musí reprezentovat jednu unikátní událost.
+- Pokud více článků popisuje stejnou událost:
+  → slouč je do jedné zprávy.
+- Je zakázáno uvádět stejnou událost vícekrát.
+
+- Pokud si nejsi jistý, zda jde o stejnou událost:
+  → považuj ji za stejnou a slouč ji.
+
+VÝBĚR ZPRÁV:
+
+- V každé rubrice vyber MAXIMÁLNĚ 5 zpráv.
+- Pokud není dostatek kvalitních událostí:
+  → uveď méně zpráv (NEVYMYŠLEJ další).
+
+- Při výběru přihlížej ke Score:
+  → vyšší Score = vyšší priorita.
+  → preferuj články s vyšším Score.
+
+- Upřednostňuj širší události před dílčími:
+  → místo více jednotlivých výsledků shrň jednu hlavní událost.
+
+FORMÁT:
+
+- Každá zpráva má přesně 2 věty:
+  1. co se stalo
+  2. proč je to důležité
+
+- U každé zprávy uveď:
+  Zdroj: [název média]
+
+- Je zakázáno:
+  - uvádět URL odkazy
+  - uvádět řádek "Odkaz:"
+  - používat "http", "https", "www"
+
+FAIL CONDITIONS:
+
+- Pokud nemáš dostatek unikátních událostí:
+  → napiš: "Pro tuto rubriku není dostatek ověřených aktuálních zpráv."
+
+- Je zakázáno:
+  - vytvářet obecné nebo typické zprávy
+  - doplňovat známé výsledky
+  - „dopočítávat realitu“
+
+KONTROLA PŘED VÝSTUPEM:
+
+Zkontroluj každou zprávu:
+- nevznikla ze stejné události jako jiná?
+- je odvozena z konkrétního vstupního článku?
+- neobsahuje URL?
+
+Pokud některá podmínka neplatí:
+→ uprav nebo odstraň zprávu.
