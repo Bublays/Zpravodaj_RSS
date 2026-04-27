@@ -423,7 +423,7 @@ def generate_briefing(articles, fx_rates):
     client = OpenAI()
 
     system_prompt = PROMPT_PATH.read_text(encoding="utf-8")
-    user_prompt = build_user_prompt(articles)
+    user_prompt = build_user_prompt(articles, fx_rates)
 
     response = client.responses.create(
         model="gpt-4.1-mini",
