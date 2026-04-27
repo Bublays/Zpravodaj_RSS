@@ -430,8 +430,44 @@ def build_user_prompt(articles, fx_rates):
 def generate_category(category, articles, fx_rates):
     client = OpenAI()
 
+    category_articles = [
+        a for a in articles if a["category_hint"] == category
+    ]
+
+    if not category_articles:
+        return f"{category}\nPro tuto rubriku není dostatek ověřených aktuálních zpráv.\n"
+
     system_prompt = PROMPT_PATH.read_text(encoding="utf-8")
-    user_prompt = build_user_prompt(articles, fx_rates)
+
+    # jednoduchý prompt jen pro jednu rubriku
+    lines = [
+        f"Vytvoř rubriku: {category}",
+        "",
+        "Použij pouze tyto články.",
+        "Nevytvářej nic mimo ně.",
+        "Maximálně 5 zpráv.",
+        "Každá zpráva má přesně 2 věty.",
+        "Nevypisuj URL.",
+        "",
+    ]
+
+    # kurzový servis jen pro finance
+    if category == "Finance":
+        lines.append("POVINNĚ ZAČNI BLOKEM:")
+        lines.append("Kurzový servis")
+        lines.append(f"EUR/CZK: {fx_rates['EUR']['rate']}")
+        lines.append(f"USD/CZK: {fx_rates['USD']['rate']}")
+        lines.append("Zdroj: Česká národní banka")
+        lines.append("")
+
+    lines.append("ČLÁNKY:")
+
+    for i, article in enumerate(category_articles[:30], 1):
+        lines.append(
+            f"{i}. {article['title']} | {article['summary']} | Score:{article['score']}"
+        )
+
+    user_prompt = "\n".join(lines)
 
     response = client.responses.create(
         model="gpt-4.1-mini",
