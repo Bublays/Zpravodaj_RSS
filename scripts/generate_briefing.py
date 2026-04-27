@@ -74,6 +74,14 @@ SOURCE_WEIGHTS = {
     "iSport": 2,
 }
 
+BRIEFING_CATEGORIES = [
+    "Z domova",
+    "Finance",
+    "Hospodářství a ekonomie",
+    "Svět",
+    "Kultura",
+    "Sport",
+]
 CATEGORY_KEYWORDS = {
     "Z domova": [
         "vláda", "premiér", "sněmovna", "senát", "ministerstvo", "policie",
