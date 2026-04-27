@@ -447,6 +447,11 @@ def generate_category(category, articles, fx_rates):
         "Nevytvářej nic mimo ně.",
         "Maximálně 5 zpráv.",
         "Každá zpráva má přesně 2 věty.",
+        "První věta začíná faktem.",
+        "Druhá věta začíná formulací: 'Důležité je, že' nebo 'Hlavní highlight je, že'.",
+        "Začni názvem rubriky (např. 'Z domova') na samostatném řádku.",
+        "Mezi názvem a první zprávou vlož prázdný řádek.",
+        "Každou zprávu odděl novým řádkem.",
         "Nevypisuj URL.",
         "",
     ]
