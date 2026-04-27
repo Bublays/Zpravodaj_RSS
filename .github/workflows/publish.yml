@@ -18,7 +18,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: Generate briefing preview
+          workflow: preview.yml
           name: briefing-preview
           path: public
           branch: main
