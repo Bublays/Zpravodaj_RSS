@@ -550,7 +550,13 @@ def main():
     if not articles:
         briefing = "RANNÍ BRIEFING\n\nNepodařilo se najít žádné aktuální články za posledních 24 hodin."
     else:
-        briefing = generate_briefing(articles, fx_rates)
+        sections = []
+
+        for category in BRIEFING_CATEGORIES:
+            section = generate_category(category, articles, fx_rates)
+            sections.append(section)
+
+        briefing = "RANNÍ BRIEFING\n\n" + "\n\n".join(sections)
 
     OUTPUT_HTML.write_text(
         render_html(briefing, len(articles)),
