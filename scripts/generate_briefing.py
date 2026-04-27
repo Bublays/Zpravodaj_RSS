@@ -3,7 +3,9 @@ import html
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
-
+import re
+import unicodedata
+from difflib import SequenceMatcher
 import feedparser
 import markdown
 from openai import OpenAI
@@ -58,6 +60,79 @@ def clean_text(value):
         return ""
     return " ".join(html.unescape(value).split())
 
+def normalize_text(text):
+    text = text.lower()
+    text = unicodedata.normalize("NFKD", text)
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = re.sub(r"https?://\S+", "", text)
+    text = re.sub(r"[^\w\s]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def similarity(a, b):
+    return SequenceMatcher(None, a, b).ratio()
+
+
+def build_event_hint(article):
+    text = normalize_text(f"{article.get('title', '')} {article.get('summary', '')}")
+
+    rules = [
+        ("fotbal_chance_liga", ["sparta", "slavia", "plzen", "banik", "bohemians", "chance liga"]),
+        ("hokej_extraliga_baraz", ["litvinov", "jihlava", "baraz", "extraliga"]),
+        ("tenis_madrid", ["madrid", "wta", "atp", "pliskova", "lehecka", "noskova", "siniakova"]),
+        ("ropa_trhy", ["ropa", "brent", "wti", "hormuz"]),
+        ("koruna_kurzy", ["koruna", "eur czk", "usd czk", "cnb"]),
+        ("obrana_nato", ["nato", "obrana", "vydaje na obranu", "hdp"]),
+        ("verejnopravni_media", ["ceska televize", "cesky rozhlas", "poplatky"]),
+    ]
+
+    for hint, keywords in rules:
+        if any(k in text for k in keywords):
+            return hint
+
+    words = text.split()
+    important_words = [w for w in words if len(w) > 4]
+    return "_".join(important_words[:4]) if important_words else "unknown"
+
+
+def deduplicate_articles(articles, similarity_threshold=0.72):
+    unique = []
+    seen_event_hints = set()
+
+    for article in articles:
+        article["event_hint"] = build_event_hint(article)
+
+        title_norm = normalize_text(article.get("title", ""))
+        summary_norm = normalize_text(article.get("summary", ""))
+        combined_norm = f"{title_norm} {summary_norm}"
+
+        duplicate = False
+
+        # Tvrdší deduplikace pro stejné event_hint v rámci stejné rubriky
+        event_key = (article.get("category_hint"), article.get("event_hint"))
+        if event_key in seen_event_hints and article["event_hint"] != "unknown":
+            duplicate = True
+
+        # Měkčí deduplikace podle podobnosti textu
+        if not duplicate:
+            for existing in unique:
+                existing_norm = normalize_text(
+                    f"{existing.get('title', '')} {existing.get('summary', '')}"
+                )
+
+                same_category = article.get("category_hint") == existing.get("category_hint")
+                similar = similarity(combined_norm, existing_norm) >= similarity_threshold
+
+                if same_category and similar:
+                    duplicate = True
+                    break
+
+        if not duplicate:
+            unique.append(article)
+            seen_event_hints.add(event_key)
+
+    return unique
 
 def collect_articles():
     now = datetime.now(timezone.utc)
@@ -99,6 +174,7 @@ def collect_articles():
                 })
 
     articles.sort(key=lambda x: x["published"], reverse=True)
+    articles = deduplicate_articles(articles)
     return articles[:MAX_ARTICLES]
 
 
@@ -118,6 +194,7 @@ def build_user_prompt(articles):
             f"{i}. [{article['category_hint']}] {article['title']}\n"
             f"   Zdroj: {article['source']}\n"
             f"   Publikováno: {article['published']}\n"
+            f"   Event hint: {article.get('event_hint', 'unknown')}\n"
             f"   Shrnutí: {article['summary']}\n"
             f"   Interní URL: {article['url']}"
         )
