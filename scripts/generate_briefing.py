@@ -302,19 +302,19 @@ def collect_articles():
                 })
 
     for article in articles:
-    article["score"] = article_score(article)
+        article["score"] = article_score(article)
 
-    articles.sort(
-        key=lambda x: (x["score"], x["published"]),
-        reverse=True
-    )
+        articles.sort(
+            key=lambda x: (x["score"], x["published"]),
+            reverse=True
+        )
 
-    articles = deduplicate_articles(articles)
+        articles = deduplicate_articles(articles)
 
-    articles.sort(
-        key=lambda x: (x.get("score", 0), x["published"]),
-        reverse=True
-    )
+        articles.sort(
+            key=lambda x: (x.get("score", 0), x["published"]),
+            reverse=True
+        )
 
 return articles[:MAX_ARTICLES]
 
