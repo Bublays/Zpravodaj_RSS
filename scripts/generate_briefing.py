@@ -15,24 +15,48 @@ if not os.getenv("OPENAI_API_KEY"):
 
 FEEDS = {
     "Z domova": [
-        "https://www.seznamzpravy.cz/rss",
-        "https://www.irozhlas.cz/rss/irozhlas",
+        "https://www.irozhlas.cz/rss/irozhlas/section/zpravy-domov",
         "https://ct24.ceskatelevize.cz/rss",
+        "https://www.seznamzpravy.cz/rss",
         "https://www.aktualne.cz/rss",
     ],
-    "Sport": [
-        "https://sport.ceskatelevize.cz/rss",
-        "https://isport.blesk.cz/rss",
+
+    "Finance": [
+        "https://www.irozhlas.cz/rss/irozhlas/section/ekonomika",
+        "https://www.aktualne.cz/rss/ekonomika",
+        "https://www.seznamzpravy.cz/rss",
     ],
+
+    "Hospodářství a ekonomie": [
+        "https://www.irozhlas.cz/rss/irozhlas/section/ekonomika",
+        "https://www.aktualne.cz/rss/ekonomika",
+        "https://www.seznamzpravy.cz/rss",
+        "https://feeds.bbci.co.uk/news/business/rss.xml",
+    ],
+
     "Svět": [
+        "https://www.irozhlas.cz/rss/irozhlas/section/zpravy-svet",
         "https://feeds.bbci.co.uk/news/world/rss.xml",
         "https://www.theguardian.com/world/rss",
         "https://rss.dw.com/rdf/rss-en-all",
     ],
+
+    "Kultura": [
+        "https://www.irozhlas.cz/rss/irozhlas/section/kultura",
+        "https://www.aktualne.cz/rss/kultura",
+        "https://www.theguardian.com/culture/rss",
+    ],
+
+    "Sport": [
+        "https://www.irozhlas.cz/rss/irozhlas/section/sport",
+        "https://www.irozhlas.cz/rss/irozhlas/sportovni-zpravy",
+        "https://sport.ceskatelevize.cz/rss",
+        "https://isport.blesk.cz/rss",
+    ],
 }
 
 
-MAX_ARTICLES = 80
+MAX_ARTICLES = 120
 MAX_SUMMARY_CHARS = 700
 SOURCE_WEIGHTS = {
     "Reuters": 4,
