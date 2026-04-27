@@ -201,6 +201,7 @@ def build_event_hint(article):
     words = text.split()
     important_words = [w for w in words if len(w) > 4]
     return "_".join(important_words[:4]) if important_words else "unknown"
+
 def source_score(source):
     source_norm = normalize_text(source)
 
@@ -418,7 +419,7 @@ def build_user_prompt(articles, fx_rates):
     return "\n".join(lines)
 
 
-def generate_briefing(articles):
+def generate_briefing(articles, fx_rates):
     client = OpenAI()
 
     system_prompt = PROMPT_PATH.read_text(encoding="utf-8")
@@ -500,11 +501,12 @@ def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     articles = collect_articles()
+    fx_rates = get_cnb_fx_rates()
 
     if not articles:
         briefing = "RANNÍ BRIEFING\n\nNepodařilo se najít žádné aktuální články za posledních 24 hodin."
     else:
-        briefing = generate_briefing(articles)
+        briefing = generate_briefing(articles, fx_rates)
 
     OUTPUT_HTML.write_text(
         render_html(briefing, len(articles)),
