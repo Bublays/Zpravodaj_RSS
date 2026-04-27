@@ -17,10 +17,12 @@ jobs:
       - name: Download latest briefing preview
         uses: dawidd6/action-download-artifact@v6
         with:
-          workflow: briefing-preview.yml
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: Generate briefing preview
           name: briefing-preview
           path: public
           branch: main
+          workflow_conclusion: success
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
