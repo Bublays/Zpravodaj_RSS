@@ -1,1 +1,4 @@
-
+Používej výhradně články dodané ve vstupu.
+Nevytvářej žádnou zprávu mimo dodaný seznam.
+Pokud pro rubriku není dostatek článků, napiš to.
+URL odkazy nepoužívej ve výstupu.
