@@ -6,6 +6,8 @@ from email.utils import parsedate_to_datetime
 import re
 import unicodedata
 from difflib import SequenceMatcher
+import xml.etree.ElementTree as ET
+from urllib.request import urlopen
 import feedparser
 import markdown
 from openai import OpenAI
@@ -55,7 +57,7 @@ FEEDS = {
     ],
 }
 
-
+CNB_FX_URL = "https://www.cnb.cz/cs/financni_trhy/devizovy_trh/kurzy_devizoveho_trhu/denni_kurz.xml"
 MAX_ARTICLES = 120
 MAX_ARTICLES_PER_CATEGORY = 20
 MAX_SUMMARY_CHARS = 700
@@ -129,7 +131,42 @@ def clean_text(value):
     if not value:
         return ""
     return " ".join(html.unescape(value).split())
+    
+def get_cnb_fx_rates():
+    try:
+        with urlopen(CNB_FX_URL, timeout=20) as response:
+            xml_data = response.read()
 
+        root = ET.fromstring(xml_data)
+
+        rates = {}
+
+        for radek in root.findall(".//radek"):
+            kod = radek.attrib.get("kod")
+            kurz = radek.attrib.get("kurz")
+            mnozstvi = radek.attrib.get("mnozstvi", "1")
+
+            if kod in {"EUR", "USD"} and kurz:
+                rates[kod] = {
+                    "rate": kurz.replace(",", "."),
+                    "amount": mnozstvi,
+                }
+
+        return {
+            "EUR": rates.get("EUR"),
+            "USD": rates.get("USD"),
+            "source": "Česká národní banka",
+            "url": CNB_FX_URL,
+        }
+
+    except Exception as e:
+        print(f"Warning: could not fetch CNB FX rates: {e}")
+        return {
+            "EUR": None,
+            "USD": None,
+            "source": "Česká národní banka",
+            "url": CNB_FX_URL,
+        }
 def normalize_text(text):
     text = text.lower()
     text = unicodedata.normalize("NFKD", text)
@@ -348,7 +385,7 @@ def collect_articles():
     return articles[:MAX_ARTICLES]
 
 
-def build_user_prompt(articles):
+def build_user_prompt(articles, fx_rates):
     lines = [
         "Použij VÝHRADNĚ následující články jako zdroj.",
         "Nevytvářej žádné zprávy mimo tento seznam.",
@@ -357,6 +394,12 @@ def build_user_prompt(articles):
         "Nevkládej do výstupu žádné URL odkazy.",
         "Neuváděj řádek začínající „Odkaz:“.",
         "Pokud pro některou rubriku není dost ověřených aktuálních článků, napiš to stručně místo vymýšlení.",
+        "",
+                "",
+        "KURZOVÝ SERVIS — POVINNĚ POUŽIJ V RUBRICE FINANCE:",
+        f"EUR/CZK: {fx_rates['EUR']['rate'] if fx_rates.get('EUR') else 'není dostupné'}",
+        f"USD/CZK: {fx_rates['USD']['rate'] if fx_rates.get('USD') else 'není dostupné'}",
+        "Zdroj: Česká národní banka",
         "",
         "ČLÁNKY:",
     ]
