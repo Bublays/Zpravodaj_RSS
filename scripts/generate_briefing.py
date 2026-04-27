@@ -126,7 +126,7 @@ def build_user_prompt(articles):
 
 
 def generate_briefing(articles):
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    client = OpenAI()
 
     system_prompt = PROMPT_PATH.read_text(encoding="utf-8")
     user_prompt = build_user_prompt(articles)
