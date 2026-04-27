@@ -11,7 +11,8 @@ permissions:
   id-token: write
 
 jobs:
-  build:
+  generate:
+    name: Generate preview
     runs-on: ubuntu-latest
 
     steps:
@@ -28,8 +29,31 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python scripts/generate_briefing.py
 
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload briefing preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: briefing-preview
+          path: public/index.html
+
+  publish:
+    name: Publish to GitHub Pages
+    needs: generate
+    runs-on: ubuntu-latest
+
+    environment:
+      name: production
+
+    steps:
+      - name: Download briefing preview
+        uses: actions/download-artifact@v4
+        with:
+          name: briefing-preview
+          path: public
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
-      - uses: actions/deploy-pages@v4
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
