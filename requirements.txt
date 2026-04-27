@@ -1,5 +1,3 @@
 openai
 feedparser
-python-dateutil
 markdown
-jinja2
