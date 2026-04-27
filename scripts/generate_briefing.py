@@ -327,6 +327,8 @@ def build_user_prompt(articles):
     lines = [
         "Použij VÝHRADNĚ následující články jako zdroj.",
         "Nevytvářej žádné zprávy mimo tento seznam.",
+        "Pokud více článků sdílí stejný Event hint nebo popisuje stejnou událost, sluč je do jedné zprávy.",
+        "Při výběru témat přihlížej ke Score: vyšší Score znamená vyšší pravděpodobnou redakční důležitost.",
         "Nevkládej do výstupu žádné URL odkazy.",
         "Neuváděj řádek začínající „Odkaz:“.",
         "Pokud pro některou rubriku není dost ověřených aktuálních článků, napiš to stručně místo vymýšlení.",
