@@ -1,9 +1,9 @@
-name: Generate morning briefing
+name: Generate and publish morning briefing
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 4 * * *" # 06:00 CET / 05:00 CEST bude potřeba sezonně upravit
+    - cron: "20 4 * * 1-5"
 
 permissions:
   contents: read
@@ -11,8 +11,7 @@ permissions:
   id-token: write
 
 jobs:
-  generate:
-    name: Generate preview
+  generate-and-publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -28,27 +27,6 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python scripts/generate_briefing.py
-
-      - name: Upload briefing preview
-        uses: actions/upload-artifact@v4
-        with:
-          name: briefing-preview
-          path: public/index.html
-
-  publish:
-    name: Publish to GitHub Pages
-    needs: generate
-    runs-on: ubuntu-latest
-
-    environment:
-      name: production
-
-    steps:
-      - name: Download briefing preview
-        uses: actions/download-artifact@v4
-        with:
-          name: briefing-preview
-          path: public
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
