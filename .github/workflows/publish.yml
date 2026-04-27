@@ -1,0 +1,31 @@
+name: Publish briefing to GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download latest briefing preview
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: briefing-preview.yml
+          name: briefing-preview
+          path: public
+          branch: main
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
