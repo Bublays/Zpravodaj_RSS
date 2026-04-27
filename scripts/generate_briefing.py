@@ -427,7 +427,7 @@ def build_user_prompt(articles, fx_rates):
     return "\n".join(lines)
 
 
-def generate_briefing(articles, fx_rates):
+def generate_category(category, articles, fx_rates):
     client = OpenAI()
 
     system_prompt = PROMPT_PATH.read_text(encoding="utf-8")
