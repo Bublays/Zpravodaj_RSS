@@ -298,25 +298,29 @@ def collect_articles():
                     "source": source,
                     "published": published_utc.isoformat(),
                     "category_hint": category,
-                    "url": link,  # interně pro audit, prompt zakazuje vypisovat URL
+                    "url": link,
                 })
 
+    # Přidání skóre
     for article in articles:
         article["score"] = article_score(article)
 
-        articles.sort(
-            key=lambda x: (x["score"], x["published"]),
-            reverse=True
-        )
+    # Nejprve seřadit podle skóre, aby deduplikace nechala silnější článek
+    articles.sort(
+        key=lambda x: (x.get("score", 0), x["published"]),
+        reverse=True
+    )
 
-        articles = deduplicate_articles(articles)
+    # Odstranění duplicit
+    articles = deduplicate_articles(articles)
 
-        articles.sort(
-            key=lambda x: (x.get("score", 0), x["published"]),
-            reverse=True
-        )
+    # Finální řazení
+    articles.sort(
+        key=lambda x: (x.get("score", 0), x["published"]),
+        reverse=True
+    )
 
-return articles[:MAX_ARTICLES]
+    return articles[:MAX_ARTICLES]
 
 
 def build_user_prompt(articles):
