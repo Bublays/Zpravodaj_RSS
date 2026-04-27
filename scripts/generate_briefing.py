@@ -34,6 +34,51 @@ FEEDS = {
 
 MAX_ARTICLES = 80
 MAX_SUMMARY_CHARS = 700
+SOURCE_WEIGHTS = {
+    "Reuters": 4,
+    "BBC": 3,
+    "The Guardian": 3,
+    "DW": 2,
+    "iROZHLAS": 3,
+    "ČT24": 3,
+    "ČT sport": 3,
+    "Seznam Zprávy": 2,
+    "Aktuálně": 2,
+    "iSport": 2,
+}
+
+CATEGORY_KEYWORDS = {
+    "Z domova": [
+        "vláda", "premiér", "sněmovna", "senát", "ministerstvo", "policie",
+        "soud", "zákon", "rozpočet", "nato", "obrana", "nemocnice",
+        "česká televize", "český rozhlas",
+    ],
+    "Finance": [
+        "koruna", "euro", "dolar", "ropa", "brent", "wti", "akcie",
+        "burza", "index", "inflace", "sazby", "čnb", "fed", "ecb",
+        "zlato", "dluhopisy",
+    ],
+    "Hospodářství a ekonomie": [
+        "hpd", "hospodářství", "průmysl", "nezaměstnanost", "mzdy",
+        "inflace", "rozpočet", "deficit", "export", "import", "cla",
+        "centrální banka",
+    ],
+    "Svět": [
+        "usa", "čína", "rusko", "ukrajina", "írán", "izrael", "gaza",
+        "eu", "nato", "osn", "sankce", "válka", "prezident",
+        "premiér", "volby", "útok",
+    ],
+    "Kultura": [
+        "festival", "film", "divadlo", "výstava", "koncert", "album",
+        "cena", "literatura", "muzeum", "galerie", "opera",
+    ],
+    "Sport": [
+        "vyhrál", "porazil", "postoupil", "finále", "semifinále",
+        "liga", "turnaj", "mistrovství", "skóre", "gól", "závod",
+        "formule", "moto", "tenis", "hokej", "fotbal",
+    ],
+}
+
 OUTPUT_DIR = Path("public")
 OUTPUT_HTML = OUTPUT_DIR / "index.html"
 PROMPT_PATH = Path("prompts/system_prompt.txt")
@@ -94,7 +139,90 @@ def build_event_hint(article):
     words = text.split()
     important_words = [w for w in words if len(w) > 4]
     return "_".join(important_words[:4]) if important_words else "unknown"
+def source_score(source):
+    source_norm = normalize_text(source)
 
+    for name, weight in SOURCE_WEIGHTS.items():
+        if normalize_text(name) in source_norm:
+            return weight
+
+    return 1
+
+
+def keyword_score(article):
+    text = normalize_text(f"{article.get('title', '')} {article.get('summary', '')}")
+    category = article.get("category_hint", "")
+    keywords = CATEGORY_KEYWORDS.get(category, [])
+
+    score = 0
+    for keyword in keywords:
+        if normalize_text(keyword) in text:
+            score += 2
+
+    return score
+
+
+def freshness_score(article):
+    try:
+        published = datetime.fromisoformat(article["published"])
+    except Exception:
+        return 0
+
+    now = datetime.now(timezone.utc)
+    age_hours = (now - published).total_seconds() / 3600
+
+    if age_hours <= 6:
+        return 5
+    if age_hours <= 12:
+        return 4
+    if age_hours <= 18:
+        return 3
+    if age_hours <= 24:
+        return 2
+
+    return 0
+
+
+def detail_score(article):
+    text = f"{article.get('title', '')} {article.get('summary', '')}"
+
+    score = 0
+
+    # čísla, procenta, skóre, ceny
+    if re.search(r"\d", text):
+        score += 2
+
+    # sportovní skóre typu 3:1 nebo 27:23
+    if re.search(r"\b\d+:\d+\b", text):
+        score += 3
+
+    # procenta
+    if "%" in text or "procent" in text:
+        score += 2
+
+    # měny / komodity
+    if any(x in text.lower() for x in ["korun", "dolar", "eur", "usd", "ropa", "brent", "zlato"]):
+        score += 2
+
+    # rozumná délka perexu = více kontextu
+    summary_len = len(article.get("summary", ""))
+    if summary_len > 120:
+        score += 1
+    if summary_len > 250:
+        score += 1
+
+    return score
+
+
+def article_score(article):
+    score = 0
+
+    score += source_score(article.get("source", ""))
+    score += keyword_score(article)
+    score += freshness_score(article)
+    score += detail_score(article)
+
+    return score
 
 def deduplicate_articles(articles, similarity_threshold=0.72):
     unique = []
@@ -173,9 +301,22 @@ def collect_articles():
                     "url": link,  # interně pro audit, prompt zakazuje vypisovat URL
                 })
 
-    articles.sort(key=lambda x: x["published"], reverse=True)
-    articles = deduplicate_articles(articles)
-    return articles[:MAX_ARTICLES]
+    for article in articles:
+    article["score"] = article_score(article)
+
+articles.sort(
+    key=lambda x: (x["score"], x["published"]),
+    reverse=True
+)
+
+articles = deduplicate_articles(articles)
+
+articles.sort(
+    key=lambda x: (x.get("score", 0), x["published"]),
+    reverse=True
+)
+
+return articles[:MAX_ARTICLES]
 
 
 def build_user_prompt(articles):
@@ -194,6 +335,7 @@ def build_user_prompt(articles):
             f"{i}. [{article['category_hint']}] {article['title']}\n"
             f"   Zdroj: {article['source']}\n"
             f"   Publikováno: {article['published']}\n"
+            f"   Score: {article.get('score', 0)}\n"
             f"   Event hint: {article.get('event_hint', 'unknown')}\n"
             f"   Shrnutí: {article['summary']}\n"
             f"   Interní URL: {article['url']}"
