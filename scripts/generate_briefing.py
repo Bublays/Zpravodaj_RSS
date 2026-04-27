@@ -59,7 +59,7 @@ CATEGORY_KEYWORDS = {
         "zlato", "dluhopisy",
     ],
     "Hospodářství a ekonomie": [
-        "hpd", "hospodářství", "průmysl", "nezaměstnanost", "mzdy",
+        "hdp", "hospodářství", "průmysl", "nezaměstnanost", "mzdy",
         "inflace", "rozpočet", "deficit", "export", "import", "cla",
         "centrální banka",
     ],
