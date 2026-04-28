@@ -1,10 +1,10 @@
 name: Generate and publish morning briefing
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "*/2 * * * *"
-
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+  
 permissions:
   contents: read
   pages: write
